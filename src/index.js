@@ -259,7 +259,8 @@ VideoStreamMerger.prototype.start = function () {
   var self = this
 
   self.started = true
-  window.requestAnimationFrame(self._draw.bind(self))
+  
+  self._draw();
 
   // Add video
   self.result = self._canvas.captureStream(self.fps)
@@ -277,13 +278,9 @@ VideoStreamMerger.prototype._draw = function () {
   var self = this
   if (!self.started) return
 
-  var awaiting = self._streams.length
-  function done () {
-    awaiting--
-    if (awaiting <= 0) window.requestAnimationFrame(self._draw.bind(self))
-  }
+  var awaiting = self._streams.length 
 
-  self._ctx.clearRect(0, 0, self.width, self.height)
+
   self._streams.forEach(function (video) {
     if (video.draw) { // custom frame transform
       video.draw(self._ctx, video.element, done)
@@ -294,8 +291,10 @@ VideoStreamMerger.prototype._draw = function () {
       done()
     }
   })
-
-  if (self._streams.length === 0) done()
+  
+  setTimeout(function() {
+      self._draw();
+  }, parseInt(1000/self.fps));
 }
 
 VideoStreamMerger.prototype.destroy = function () {
